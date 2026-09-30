@@ -113,11 +113,13 @@ compute_sha_from_download() {
   temp_dir="$(mktemp -d)"
   temp_file="${temp_dir}/Orttaai-${version}.dmg"
 
-  trap 'rm -rf "${temp_dir}"' EXIT
-
-  echo "Downloading ${url}"
-  curl -fL --progress-bar -o "${temp_file}" "${url}"
+  echo "Downloading ${url}" >&2
+  if ! curl -fL --progress-bar -o "${temp_file}" "${url}"; then
+    rm -rf "${temp_dir}"
+    return 1
+  fi
   compute_sha_from_file "${temp_file}"
+  rm -rf "${temp_dir}"
 }
 
 if [[ -z "${SHA256}" ]]; then
